@@ -74,8 +74,8 @@ I'm learning to:
 - [ ] Start/Stop detection button
 - [ ] Clean exit button
 - [ ] Notification system (e.g. sound or pop-up)
-<!-- - [ ]Screenshot capture when distraction is logged -->
-- [ ]Export logs as summary report
+- [ ] Export logs as summary report (particluarly as pdf files)
+- [ ] Biometric + password-secured login page
 
 ---
 
@@ -87,8 +87,8 @@ This project is part of my journey into computer vision and software engineering
 
 Got ideas? Want to contribute or learn together? Let’s connect:
 
-📧 [ayotomide.toluwani@gmail.com]  
-🐦 [www.linkedin.com/in/ayotomide-ogunsami-93aa61312]
+📧 [My email](ayotomide.toluwani@gmail.com) 
+🐦 [Ayotomide Ogunsami](www.linkedin.com/in/ayotomide-ogunsami-93aa61312)
 
 ---
 

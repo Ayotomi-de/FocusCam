@@ -8,134 +8,140 @@ from datetime import datetime
 
 # FocusCam: A simple distraction detection app using OpenCV and MediaPipe
 # GUI setup
-window = tk.Tk()
-window.title("FocusCam 😌✨")
+class FocusCamApp:
+    def __init__(self):
+        # Set up everything that used to be at the top
+        self.window = tk.Tk()
+        self.window.title("FocusCam 😌✨")
+        
+        # Video Feed Label
+        self.video_label = tk.Label(self.window)
+        self.video_label.pack()
+        
+        # Status Label
+        self.status_label = tk.Label(self.window, text="Status: Not Running", font=("Times", 12), fg="blue")
+        self.status_label.pack()
+        
+        # Button Frame
+        button_frame = tk.Frame(self.window)
+        button_frame.pack(pady=50)
 
-video_label = tk.Label(window)
-video_label.pack()
+        # Start, Stop, and Exit Buttons
+        self.start_button = tk.Button(button_frame, text="Start Detection", bg="green", fg="white", command=self.start_detection)
+        self.start_button.grid(row=0, column=0, padx=5)
 
-status_label = tk.Label(window, text="Status: Not Running", font=("Times", 12), fg="blue")
-status_label.pack()
-button_frame = tk.Frame(window)
-button_frame.pack(pady=50)
+        self.stop_button = tk.Button(button_frame, text="Stop Detection", bg="orange", fg="white", command=self.stop_detection)
+        self.stop_button.grid(row=0, column=1, padx=5)
 
-start_button = tk.Button(button_frame, text="Start Detection", bg="green", fg="white")
-start_button.grid(row=0, column=0, padx=5)
+        self.exit_button = tk.Button(button_frame, text="Exit", bg="red", fg="white", command=self.exit_app)
+        self.exit_button.grid(row=0, column=2, padx=5)
 
-stop_button = tk.Button(button_frame, text="Stop Detection", bg="orange", fg="white")
-stop_button.grid(row=0, column=1, padx=5)
+        # Camera setup
+        self.cap = cv2.VideoCapture(0)
+        
+        mp_face_mesh = mp.solutions.face_mesh
+        self.face_mesh = mp_face_mesh.FaceMesh(refine_landmarks=True)
+        self.mp_face_mesh = mp_face_mesh
+        self.mp_drawing = mp.solutions.drawing_utils
 
-exit_button = tk.Button(button_frame, text="Exit", bg="red", fg="white")
-exit_button.grid(row=0, column=2, padx=5)
+        # Logging
+        self.log_file = "distraction_log.csv"
+        with open(self.log_file, mode="a", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Timestamp", "Distraction"])
 
-def blink_label(color1="orange", color2="yellow", delay=300):
-    current_color = status_label.cget("fg")
-    new_color = color2 if current_color == color1 else color1
-    status_label.config(fg=new_color)
-    if running:
-        window.after(delay, lambda: blink_label(color1, color2, delay))
+        # State variables
+        self.distraction_timer = None
+        self.is_distracted = False
+        self.running = False
 
-# Video capture setup
-cap = cv2.VideoCapture(0)
-mp_face_mesh = mp.solutions.face_mesh
-face_mesh = mp_face_mesh.FaceMesh(refine_landmarks=True)
-mp_drawing = mp.solutions.drawing_utils
+        # Start the camera loop
+        self.update_frame()
+        self.window.mainloop()
+        
+    def update_frame(self):
+        if not self.running:
+            self.window.after(10, self.update_frame)
+            return
 
-# Logging
-log_file = "distraction_log.csv"
-with open(log_file, mode="a", newline="") as f:
-    writer = csv.writer(f)
-    writer.writerow(["Timestamp", "Distraction"])
-
-# Initialize variables
-distraction_timer = None
-is_distracted = False   
-running = False
-
-def log_distraction():
-    with open(log_file, mode="a", newline="") as f:
-        writer = csv.writer(f)
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        writer.writerow([timestamp, "No face or eyes detected"])
-
-def update_frame():
-    global distraction_timer, is_distracted
+        ret, frame = self.cap.read()
+        if not ret:
+            print("Failed to grab frame")
+            return
     
-    if not running:
-        window.after(10, update_frame)
-        return
+        # Convert frame to RGB for MediaPipe processing
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = self.face_mesh.process(frame_rgb)
 
-    ret, frame = cap.read()
-    if not ret:
-        return
+        face_detected = False
+        eyes_detected = False
 
-    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = face_mesh.process(frame_rgb)
-
-    face_detected = False
-    eyes_detected = False
-
-    if results.multi_face_landmarks:
-        face_detected = True
-        for face_landmarks in results.multi_face_landmarks:
-            # Draw facial landmarks
-            mp_drawing.draw_landmarks(
-                image=frame,
-                landmark_list=face_landmarks,
-                connections=mp_face_mesh.FACEMESH_TESSELATION,
-                landmark_drawing_spec=None,
-                connection_drawing_spec=mp_drawing.DrawingSpec(color=(0,255,0), thickness=1, circle_radius=1),
+        if results.multi_face_landmarks:
+            face_detected = True
+            for face_landmarks in results.multi_face_landmarks:
+                self.mp_drawing.draw_landmarks(
+                   image=frame,
+                   landmark_list=face_landmarks,
+                   connections=self.mp_face_mesh.FACEMESH_TESSELATION,
+                   landmark_drawing_spec=None,
+                   connection_drawing_spec=self.mp_drawing.DrawingSpec(color=(0,255,0), thickness=1, circle_radius=1),
             )
 
-            # Check eyes: landmark 145 (left) & 374 (right)
-            left_eye = face_landmarks.landmark[145]
-            right_eye = face_landmarks.landmark[374]
+            # Check eyes: landmark left (Top eyelid = 159 and bottom eyelid = 145) & right (top eyelid = 386 and bottom eyelid = 374)
+            left_eye_openness = abs(face_landmarks.landmark[159].y - face_landmarks.landmark[145].y)
+            right_eye_openness = abs(face_landmarks.landmark[386].y - face_landmarks.landmark[374].y)
 
-            if left_eye.visibility > 0.5 and right_eye.visibility > 0.5:
+            if left_eye_openness > 0.015 and right_eye_openness > 0.015:
                 eyes_detected = True
 
-    # Distraction logic
-    if face_detected and not eyes_detected:
-        status_label.config(text="Status: Distraction Detected", fg="orange")
-        blink_label()
-        if distraction_timer is None:
-            distraction_timer = time.time()
-        elif time.time() - distraction_timer > 2 and not is_distracted:
-            log_distraction()
-            is_distracted = True
-    elif face_detected and eyes_detected:
-        status_label.config(text="Status: Focused", fg="green")
-        distraction_timer = None
-        is_distracted = False
-    else:
-       status_label.config(text="Status: No Face Detected", fg="red")   
-       distraction_timer = None
-       is_distracted = False
-
+        # Distraction logic
+        if face_detected and not eyes_detected:
+            self.status_label.config(text="Status: Distraction Detected", fg="orange")
+            if self.distraction_timer is None:
+               self.distraction_timer = time.time()
+            elif time.time() - self.distraction_timer > 2 and not self.  is_distracted:
+               self.log_distraction()
+               self.is_distracted = True
+            
+        elif face_detected and eyes_detected:
+           self.status_label.config(text="Status: Focused", fg="green")
+           self.distraction_timer = None
+           self.is_distracted = False
+           
+        else:
+           self.status_label.config(text="Status: No Face Detected", fg="red")   
+           self.distraction_timer = None
+           self.is_distracted = False
+   
     # Convert for Tkinter display
-    img = ImageTk.PhotoImage(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
-    video_label.config(image=img)
-    video_label.image = img
-    window.after(10, update_frame)
+        img = ImageTk.PhotoImage(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
+        self.video_label.config(image=img)
+        self.video_label.image = img
+        self.window.after(10, self.update_frame)
 
-#Button functionality
-def start_detection():
-    global running
-    running = True
-    status_label.config(text="Status: Starting...", fg="blue")
-def stop_detection():
-    global running
-    running = False
-    status_label.config(text="Status: Detection stopped", fg="gray")
-def exit_app():
-    cap.release()
-    window.destroy()
+    #Logs distractions to a CSV file 
+    def log_distraction(self):
+        with open(self.log_file, mode="a", newline="") as f:
+           writer = csv.writer(f)
+           timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+           writer.writerow([timestamp, "No face or eyes detected"])
+
+    #Start button - Enables frame detection
+    def start_detection(self):
+       self.running = True
+       self.status_label.config(text="Status: Starting...", fg="blue")
     
-# Bind buttons to functions
-start_button.config(command=start_detection)
-stop_button.config(command=stop_detection)
-exit_button.config(command=exit_app)
- 
-update_frame()
-window.mainloop()
-cap.release()
+    #Stop button - Stops frame detection
+    def stop_detection(self):
+       self.running = False
+       self.status_label.config(text="Status: Detection stopped", fg="gray")
+
+    #Exit button - Releases webcam and closes the application
+    def exit_app(self):
+       self.cap.release()
+       self.window.destroy()
+    
+if __name__ == "__main__":
+    FocusCamApp()
+# This is the main entry point for the FocusCam application
+# It initializes the FocusCamApp class, which sets up the GUI and starts the camera feed

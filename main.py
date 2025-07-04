@@ -86,20 +86,16 @@ class FocusCamApp:
                    landmark_drawing_spec=None,
                    connection_drawing_spec=self.mp_drawing.DrawingSpec(color=(0,255,0), thickness=1, circle_radius=1),
             )
-
-            # Check eyes: landmark left (Top eyelid = 159 and bottom eyelid = 145) & right (top eyelid = 386 and bottom eyelid = 374)
-            left_eye_openness = abs(face_landmarks.landmark[159].y - face_landmarks.landmark[145].y)
-            right_eye_openness = abs(face_landmarks.landmark[386].y - face_landmarks.landmark[374].y)
-
-            if left_eye_openness > 0.015 and right_eye_openness > 0.015:
-                eyes_detected = True
+                
+                if self.is_eyes_open(face_landmarks):
+                  eyes_detected = True
 
         # Distraction logic
         if face_detected and not eyes_detected:
             self.status_label.config(text="Status: Distraction Detected", fg="orange")
             if self.distraction_timer is None:
                self.distraction_timer = time.time()
-            elif time.time() - self.distraction_timer > 2 and not self.  is_distracted:
+            elif time.time() - self.distraction_timer > 3 and not self.  is_distracted:
                self.log_distraction()
                self.is_distracted = True
             
@@ -125,6 +121,18 @@ class FocusCamApp:
            writer = csv.writer(f)
            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
            writer.writerow([timestamp, "No face or eyes detected"])
+   
+   # Check if eyes are open based on the x and y coordinates of the eyelid landmarks
+    def is_eyes_open(self, face_landmarks):
+     # Get the y-coordinates of eyelid landmarks
+     #(Top eyelid = 159 and bottom eyelid = 145) & right (top eyelid = 386 and bottom eyelid = 374)
+     left_eye_openness = abs(face_landmarks.landmark[159].y - face_landmarks.landmark[145].y)
+     right_eye_openness = abs(face_landmarks.landmark[386].y - face_landmarks.landmark[374].y)
+
+     # You can later adjust the 0.015 threshold if needed
+     if left_eye_openness > 0.015 and right_eye_openness > 0.015:
+         return True
+     return False
 
     #Start button - Enables frame detection
     def start_detection(self):

@@ -60,69 +60,82 @@ class FocusCamApp:
         self.window.mainloop()
         
     def update_frame(self):
-        if not self.running:
-            self.window.after(10, self.update_frame)
-            return
-
-        ret, frame = self.cap.read()
-        if not ret:
-            print("Failed to grab frame")
-            return
-    
-        # Convert frame to RGB for MediaPipe processing
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = self.face_mesh.process(frame_rgb)
-
-        face_detected = False
-        eyes_detected = False
-
-        if results.multi_face_landmarks:
-            face_detected = True
-            for face_landmarks in results.multi_face_landmarks:
-                self.mp_drawing.draw_landmarks(
-                   image=frame,
-                   landmark_list=face_landmarks,
-                   connections=self.mp_face_mesh.FACEMESH_TESSELATION,
-                   landmark_drawing_spec=None,
-                   connection_drawing_spec=self.mp_drawing.DrawingSpec(color=(0,255,0), thickness=1, circle_radius=1),
-            )
-                
-                if self.is_eyes_open(face_landmarks):
-                  eyes_detected = True
-
-        # Distraction logic
-        if face_detected and not eyes_detected:
-            self.status_label.config(text="Status: Distraction Detected", fg="orange")
-            if self.distraction_timer is None:
-               self.distraction_timer = time.time()
-            elif time.time() - self.distraction_timer > 3 and not self.  is_distracted:
-               self.log_distraction()
-               self.is_distracted = True
-            
-        elif face_detected and eyes_detected:
-           self.status_label.config(text="Status: Focused", fg="green")
-           self.distraction_timer = None
-           self.is_distracted = False
-           
-        else:
-           self.status_label.config(text="Status: No Face Detected", fg="red")   
-           self.distraction_timer = None
-           self.is_distracted = False
-   
-    # Convert for Tkinter display
-        img = ImageTk.PhotoImage(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
-        self.video_label.config(image=img)
-        self.video_label.image = img
+     if not self.running:
         self.window.after(10, self.update_frame)
+        return
+
+     ret, frame = self.cap.read()
+     if not ret:
+        print("Failed to grab frame")
+        self.window.after(10, self.update_frame)
+        return
+
+     # Convert frame to RGB for MediaPipe processing
+     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+     results = self.face_mesh.process(frame_rgb)
+
+     face_detected = False
+     eyes_detected = False
+
+     if results.multi_face_landmarks:
+         face_detected = True
+         for face_landmarks in results.multi_face_landmarks:
+            # Draw facial landmarks
+            self.mp_drawing.draw_landmarks(
+                image=frame,
+                landmark_list=face_landmarks,
+                connections=self.mp_face_mesh.FACEMESH_TESSELATION,
+                landmark_drawing_spec=None,
+                connection_drawing_spec=self.mp_drawing.DrawingSpec(color=(0, 255, 0), thickness=1, circle_radius=1),
+            )
+
+            if self.is_eyes_open(face_landmarks):
+                eyes_detected = True
+
+     # Handle distraction check
+     self.handle_distraction_status(face_detected, eyes_detected)
+
+     # Convert the frame back to ImageTk for Tkinter
+     img = ImageTk.PhotoImage(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)))
+     self.video_label.config(image=img)
+     self.video_label.image = img  # prevent garbage collection of image
+
+     # Call update_frame() again after 10 ms
+     self.window.after(10, self.update_frame)
+
+
+    # Distraction logic
+    def handle_distraction_status(self, face_detected, eyes_detected):
+     if face_detected and not eyes_detected:
+         self.status_label.config(text="Status: Distraction Detected (Eyes Closed)", fg="orange")
+         if self.distraction_timer is None:
+            self.distraction_timer = time.time()
+         elif time.time() - self.distraction_timer > 2 and not self.is_distracted:
+            self.log_event("Eyes closed for more than 2 seconds")
+            self.is_distracted = True
+
+     elif face_detected and eyes_detected:
+        self.status_label.config(text="Status: Focused", fg="green")
+        self.distraction_timer = None
+        self.is_distracted = False
+
+     else:
+        self.status_label.config(text="Status: No Face Detected", fg="red")
+        if self.distraction_timer is None:
+            self.distraction_timer = time.time()
+        elif time.time() - self.distraction_timer > 2 and not self.is_distracted:
+            self.log_event("No face detected for more than 2 seconds")
+            self.is_distracted = True
 
     #Logs distractions to a CSV file 
-    def log_distraction(self):
-        with open(self.log_file, mode="a", newline="") as f:
-           writer = csv.writer(f)
-           timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-           writer.writerow([timestamp, "No face or eyes detected"])
+    def log_event(self, message):
+     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+     with open(self.log_file, mode="a", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow([timestamp, message])
+
    
-   # Check if eyes are open based on the x and y coordinates of the eyelid landmarks
+    # Check if eyes are open based on the x and y coordinates of the eyelid landmarks
     def is_eyes_open(self, face_landmarks):
      # Get the y-coordinates of eyelid landmarks
      #(Top eyelid = 159 and bottom eyelid = 145) & right (top eyelid = 386 and bottom eyelid = 374)

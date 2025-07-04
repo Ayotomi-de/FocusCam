@@ -1,5 +1,7 @@
 import cv2
 import tkinter as tk
+import tkinter.messagebox as messagebox
+import tkinter.font as tkFont
 from PIL import Image, ImageTk
 import mediapipe as mp
 import time
@@ -59,6 +61,9 @@ class FocusCamApp:
         self.update_frame()
         self.window.mainloop()
         
+    def show_distraction_alert(self, message="You seem distracted! Please refocus."):
+        messagebox.showwarning("Distraction Alert 🚨", message)
+
     def update_frame(self):
      if not self.running:
         self.window.after(10, self.update_frame)
@@ -112,6 +117,7 @@ class FocusCamApp:
             self.distraction_timer = time.time()
          elif time.time() - self.distraction_timer > 2 and not self.is_distracted:
             self.log_event("Eyes closed for more than 2 seconds")
+            self.show_distraction_alert("Eyes closed for too long!")
             self.is_distracted = True
 
      elif face_detected and eyes_detected:

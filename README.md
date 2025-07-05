@@ -25,6 +25,7 @@ I'm learning to:
 - Handle logic for motion/distraction detection
 - Log events to external files
 - Debug Python library issues
+- Save photos to database and check if the person in the webcam matches a picture stored in the db.
 
 ---
 
@@ -64,6 +65,7 @@ I'm learning to:
 - `distraction_log.csv` – Log file for distractions
 - `README.md` – This doc
 - `haarcascade_frontalface_default.xml` – (Optional backup if you use it)
+- `haarcascade_eye.xml`
 - `banner.png` - (Coming soon: project thumbnail!)
 
 ---
@@ -71,12 +73,16 @@ I'm learning to:
 ## Planned Improvements
 - [x] Real-time detection using FaceMesh
 - [x] Distraction logging to CSV
-- [ ] Start/Stop detection button
-- [ ] Clean exit button
+- [x] Start/Stop detection button
+- [x] Clean exit button
 - [ ] Notification system (e.g. sound or pop-up)
 - [ ] Export logs as summary report (particluarly as pdf files)
 - [ ] Biometric + password-secured login page
 
+---
+## Planned Updates and Changes
+After some deep thinking, i've decided to change focuscam to soemthing else that can be implemented in the real-word usage. However, I'll continue working on the logic of focuscam so stay tunded 😉.
+ 
 ---
 
 ## 🤝 Let's Connect

@@ -167,7 +167,7 @@ class FocusCamApp:
     def exit_app(self):
        self.cap.release()
        self.window.destroy()
-    
+
 if __name__ == "__main__":
     FocusCamApp()
 # This is the main entry point for the FocusCam application

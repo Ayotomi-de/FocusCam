@@ -1,0 +1,9 @@
+-- CREATE DATABASE focuscam CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- USE focuscam;
+
+-- CREATE TABLE USERS (
+--     id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+--     name VARCHAR(100) NOT NULL,
+--     image LONGBLOB NOT NULL,
+--     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+-- );

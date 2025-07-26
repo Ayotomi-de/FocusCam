@@ -71,12 +71,12 @@ I'm learning to:
 After some deep thinking, i've decided to change focuscam to something else that can be implemented in the real-word usage, it can be a whole different logic or maybe a web app, who knows? However, I'll continue working on the logic of focuscam so stay tunded 😉.
  
 ## 🤝 Let's Connect
-👩🏽‍💻 About Me
+👩🏽‍💻 About Me <br>
 Hi, I’m **Ayotomide** — a passionate learner, tech enthusiast, and now a proud builder of FocusCam!
 This project is part of my journey into computer vision and software engineering.
 
-Got ideas? Want to contribute or learn together? Let’s connect:
-📧 [My email](ayotomide.toluwani@gmail.com) 
+Got ideas? Want to contribute or learn together? Let’s connect: <br>
+📧 [My email](mailto:ayotomide.toluwani@gmail.com) <br>
 🐦 [Ayotomide Ogunsami](www.linkedin.com/in/ayotomide-ogunsami-93aa61312)
 
 > “Focus is the key to finishing. Let your camera catch what your brain might miss.”

@@ -4,14 +4,14 @@ FocusCam is a lightweight desktop app that uses your webcam to track focus by de
 
 ---
 
-## 📸 Features
+## Features
 
-- ✅ Real-time face & eye detection using MediaPipe FaceMesh
-- ✅ Logs moments of distraction to a CSV file
-- ✅ Simple and clean GUI using Tkinter
-- ✅ Real-time video display using your webcam
-- ✅ Beginner-friendly codebase to learn from
-- ✅ Designed with students and focus-lovers in mind 😄
+- Real-time face & eye detection using MediaPipe FaceMesh.
+- Logs moments of distraction to a CSV file.
+- Simple and clean GUI using Tkinter.
+- Real-time video display using your webcam.
+- Beginner-friendly codebase to learn from.
+- Designed with students and focus-lovers in mind.
 
 ---
 
@@ -25,7 +25,7 @@ I'm learning to:
 - Handle logic for motion/distraction detection
 - Log events to external files
 - Debug Python library issues
-- Save photos to database and check if the person in the webcam matches a picture stored in the db.
+- Save photos to database.
 
 ---
 
@@ -37,6 +37,7 @@ I'm learning to:
 - Tkinter
 - PIL (Pillow)
 - CSV Logging
+- MySQL
 
 ---
 
@@ -66,22 +67,28 @@ I'm learning to:
 - `README.md` – This doc
 - `haarcascade_frontalface_default.xml` – (Optional backup if you use it)
 - `haarcascade_eye.xml`
+- `database.py` - Mysql database connection code
+- `test_db_connection` - To test if Mysql runs smoothly
+- `focuscam.sql` - The SQL query of the Mysql databse which I created in phpMyAdmin using XAMPP.
 - `banner.png` - (Coming soon: project thumbnail!)
 
 ---
 
 ## Planned Improvements
-- [x] Real-time detection using FaceMesh
+- [x] Real-time face detection using FaceMesh
 - [x] Distraction logging to CSV
 - [x] Start/Stop detection button
 - [x] Clean exit button
-- [ ] Notification system (e.g. sound or pop-up)
+- [x] Saving users faces and username in a Mysql database
+- [x] Storing users info in a Mysql 
+- [x] Notification system (e.g. sound or pop-up)
+- [ ] Face recognition
 - [ ] Export logs as summary report (particluarly as pdf files)
-- [ ] Biometric + password-secured login page
 
 ---
-## Planned Updates and Changes
-After some deep thinking, i've decided to change focuscam to soemthing else that can be implemented in the real-word usage. However, I'll continue working on the logic of focuscam so stay tunded 😉.
+
+## Planned Updates and Upcoming Changes
+After some deep thinking, i've decided to change focuscam to something else that can be implemented in the real-word usage, it can be a whole different logic or maybe a web app, who knows? However, I'll continue working on the logic of focuscam so stay tunded 😉.
  
 ---
 

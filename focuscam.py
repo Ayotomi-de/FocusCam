@@ -7,15 +7,26 @@ import mediapipe as mp
 import csv
 import time
 from datetime import datetime
+from login_capture import gui_login_capture
 
 # FocusCam: A simple distraction detection app using OpenCV and MediaPipe
 # GUI setup
 class FocusCamApp:
-    def __init__(self):
+    def start_detection(self):
+        if not self.running:
+            username = gui_login_capture(self.window)
+            if not username:
+                return
+            self.status_label.config(text=f"User: {username} - Logged In ✅", fg="purple")
+
+            self.running = True
+            self.status_label.config(text="Status: Starting...", fg="blue")
+            
+    def __init__(self): 
         # Set up everything that used to be at the top
         self.window = tk.Tk()
         self.window.title("FocusCam 😌✨")
-        
+
         # Video Feed Label
         self.video_label = tk.Label(self.window)
         self.video_label.pack()
